@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>大学路机灵的铠甲虾</title>
-
 <style>
 *{
     margin:0;
@@ -18,11 +17,11 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    background:url("/bg.jpg") no-repeat center center fixed;
+    background:url("bg.jpg") no-repeat center center fixed;
     background-size:cover;
 }
 
-/* 左侧截图 */
+/* 左侧悬浮截图 */
 .bg-image{
     position:fixed;
     left:0;
@@ -33,9 +32,16 @@ body{
     border-radius:10px;
     box-shadow:0 10px 25px rgba(0,0,0,0.4);
     z-index:1000;
+    animation:float 3s ease-in-out infinite;
 }
 
-/* 卡片 */
+@keyframes float{
+    0%{ transform:translateY(-50%) translateY(0px);}
+    50%{ transform:translateY(-50%) translateY(-8px);}
+    100%{ transform:translateY(-50%) translateY(0px);}
+}
+
+/* 中间卡片 */
 .main-box{
     width:500px;
     max-width:90%;
@@ -44,6 +50,12 @@ body{
     border-radius:12px;
     box-shadow:0 10px 25px rgba(0,0,0,0.25);
     text-align:center;
+    animation:fadeUp 0.8s ease;
+}
+
+@keyframes fadeUp{
+    from{ opacity:0; transform:translateY(20px); }
+    to{ opacity:1; transform:translateY(0); }
 }
 
 .title{
@@ -60,6 +72,7 @@ body{
     border:2px solid #a31717;
     border-radius:6px;
     margin-bottom:20px;
+    outline:none;
 }
 
 .btn-group{
@@ -70,7 +83,7 @@ body{
 
 .btn{
     flex:1;
-    padding:12px;
+    padding:12px 0;
     font-size:16px;
     font-weight:bold;
     color:#fff;
@@ -78,15 +91,22 @@ body{
     border:none;
     border-radius:6px;
     cursor:pointer;
+    transition:0.2s;
 }
 
+.btn:hover{
+    background:#c01d1d;
+    transform:translateY(-2px);
+}
+
+/* 验证码框 */
 .result-box{
     position:relative;
     width:100%;
     height:70px;
     border:2px solid #a31717;
     border-radius:8px;
-    background:#fff;
+    background:#ffffff;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -95,7 +115,7 @@ body{
     overflow:hidden;
 }
 
-/* 进度条 */
+/* 渐变进度条 */
 .progress-bg{
     position:absolute;
     left:0;
@@ -116,15 +136,22 @@ body{
     z-index:1;
 }
 
+/* 手机适配 */
 @media (max-width:900px){
     .bg-image{ display:none; }
+}
+
+@media (max-width:600px){
+    .main-box{ padding:20px; }
+    .result-box{ height:60px; font-size:22px; }
 }
 </style>
 </head>
 
 <body>
 
-<img src="/screenshot.png" class="bg-image">
+<!-- 左侧悬浮截图 -->
+<img src="screenshot.png" class="bg-image">
 
 <div class="main-box">
 
@@ -145,27 +172,31 @@ body{
 
     <div class="result-box">
         <div class="progress-bg" id="progressBg"></div>
-        <div class="code-text" id="code">------</div>
+        <div class="code-text" id="code">--------</div>
     </div>
 
 </div>
 
 <script>
+/* 禁止右键和开发者工具 */
+document.addEventListener("contextmenu", e=>e.preventDefault());
+document.addEventListener("keydown", function(e){
+    if(e.key==="F12" || (e.ctrlKey && e.shiftKey && e.key==="I") || (e.ctrlKey && e.key==="u")){
+        e.preventDefault();
+    }
+});
 
 let currentKey="";
 let timer=null;
 
 async function generate(){
     if(!currentKey) return;
-
-    const res = await fetch("/api/generate",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
+    const res = await fetch('/api/generate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({key:currentKey})
     });
-
     const data = await res.json();
-
     if(data.code){
         document.getElementById("code").innerText = data.code;
     }
@@ -173,58 +204,52 @@ async function generate(){
 
 function start(){
     const key = document.getElementById("keyInput").value.trim();
-
+    if(!key){
+        alert("请在下方输入框输入40位密钥");
+        return;
+    }
     if(!/^[0-9a-fA-F]{40}$/.test(key)){
         alert("请在下方输入框输入40位密钥");
         return;
     }
-
     currentKey = key;
-
     generate();
     runTimer();
 }
 
 function runTimer(){
     clearInterval(timer);
-
     const step = 30;
     let passed = Math.floor(Date.now()/1000) % step;
-
     updateProgress(passed);
 
-    timer = setInterval(()=>{
+    timer=setInterval(()=>{
         passed++;
-
         if(passed >= step){
-            passed = 0;
-            generate(); // 🔥 自动刷新
+            passed=0;
+            generate();
         }
-
         updateProgress(passed);
-
     },1000);
 }
 
 function updateProgress(passed){
     const percent = (passed / 30) * 100;
     const progress = document.getElementById("progressBg");
+    progress.style.width = percent+"%";
 
-    progress.style.width = percent + "%";
-
-    if(30-passed <= 5){
+    if(30-passed <=5){
         progress.classList.add("danger");
-    } else {
+    }else{
         progress.classList.remove("danger");
     }
 }
 
 function copyCode(){
     const code = document.getElementById("code").innerText;
-    if(code==="------") return;
+    if(code==="--------") return;
     navigator.clipboard.writeText(code);
 }
-
 </script>
 
 </body>
