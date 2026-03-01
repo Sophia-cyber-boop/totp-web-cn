@@ -3,13 +3,13 @@ const speakeasy = require("speakeasy");
 const cors = require("cors");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// 静态资源
+// 🔥 关键：托管 public 目录
 app.use(express.static("public"));
 
-// TOTP 生成接口
 app.post("/api/generate", (req, res) => {
     const { key } = req.body;
 
@@ -21,8 +21,7 @@ app.post("/api/generate", (req, res) => {
         const token = speakeasy.totp({
             secret: key,
             encoding: "hex",
-            step: 30,
-            digits: 8   // 🔥 保证生成 8 位
+            step: 30
         });
 
         res.json({ code: token });
@@ -32,6 +31,8 @@ app.post("/api/generate", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
     console.log("服务器已启动，端口：" + PORT);
 });
+
