@@ -23,17 +23,30 @@ body{
 }
 
 /* 左侧截图 */
+<img src="/screenshot.png" class="bg-image">
+
+<style>
+/* 截图上下浮动效果 */
 .bg-image{
-    position:fixed;
-    left:0;
-    top:50%;
-    transform:translateY(-50%);
-    width:260px;
-    max-width:40%;
-    border-radius:10px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.4);
-    z-index:1000;
+    position: fixed;              /* 固定在左侧，不随卡片移动 */
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 260px;
+    max-width: 40%;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    z-index: 1000;                /* 保证在最前面，不被卡片遮挡 */
+    animation: float 3s ease-in-out infinite; /* 上下浮动动画 */
 }
+
+/* 上下浮动动画定义 */
+@keyframes float{
+    0% { transform: translateY(-50%) translateY(0px); }
+    50% { transform: translateY(-50%) translateY(-8px); }
+    100% { transform: translateY(-50%) translateY(0px); }
+}
+</style>
 
 /* 卡片 */
 .main-box{
